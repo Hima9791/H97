@@ -4,6 +4,7 @@ import { Point } from "../../../../helpers/Point";
 import { viewportX, viewportY } from "../../../../helpers/ViewportCoordinates";
 import { Furniture } from "../Furniture";
 import { TransformLayer } from "./TransformLayer";
+import { WALL_THICKNESS } from "../../constants";
 
 export enum HandleType {
     Horizontal,
@@ -111,7 +112,7 @@ export class Handle extends Graphics {
         this.targetStartPoint = this.target.getGlobalPosition();
         this.targetStartCenterPoint.x = this.targetStartPoint.x + this.target.width / 2;
         this.targetStartCenterPoint.y = this.targetStartPoint.y + this.target.height / 2
-        let localCoords = ev.data.getLocalPosition(this.target)
+        this.localCoords = ev.data.getLocalPosition(this.target.parent);
         this.startRotaton = this.target.rotation;
         this.startScale.x = this.target.scale.x;
         this.startScale.y = this.target.scale.y;
@@ -184,6 +185,8 @@ export class Handle extends Graphics {
                 } else {
                   let amount = (delta.x + delta.y) * 0.8;
         
+                  const parentWall = this.target.parent as typeof this.target.parent & { length: number };
+
                   //start of wall
                   if (this.localCoords.x + amount <= WALL_THICKNESS * 0.5) {
                     this.target.position.x = WALL_THICKNESS * 0.5;
@@ -191,10 +194,10 @@ export class Handle extends Graphics {
                   //end of wall
                   else if (
                     this.localCoords.x + amount >=
-                    this.target.parent.length - this.target.width - WALL_THICKNESS * 0.5 //parent wall length
+                    parentWall.length - this.target.width - WALL_THICKNESS * 0.5 //parent wall length
                   ) {
                     this.target.position.x =
-                      this.target.parent.length -
+                      parentWall.length -
                       this.target.width -
                       WALL_THICKNESS * 0.5;
                   }
